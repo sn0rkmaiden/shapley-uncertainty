@@ -6,6 +6,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 nli_name = "microsoft/deberta-large-mnli"
 nli_tok = AutoTokenizer.from_pretrained(nli_name)
 nli = AutoModelForSequenceClassification.from_pretrained(nli_name).to(device).eval()
+print(f"NLI model loaded on {device}: {nli_name}")
 
 @torch.no_grad()
 def entail_prob_batch(prem_list: list, hyp_list: list, batch_size: int = 8) -> np.ndarray:
@@ -54,4 +55,4 @@ def shapley_uncertainty_for_prompt(prompt: str, gold: str | None = None, n_sampl
         p = w / w.sum()
         entropy = -float(np.sum(p * np.log(p + 1e-12))) / np.log(len(p))
         confgap = 1.0 - float(p.max())
-    return {"uncertainty": float(entropy), "confidence_gap": float(confgap), "phi": phi, "samples": samples, "kernel": K, "P": P}
+    return {"total_uncertainty": np.sum(phi), "uncertainty": float(entropy), "confidence_gap": float(confgap), "phi": phi, "samples": samples, "kernel": K, "P": P}

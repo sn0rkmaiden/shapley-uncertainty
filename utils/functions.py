@@ -39,6 +39,7 @@ def sample_generations_api(prompt: str, n: int = 20, max_tokens: int = 96, tempe
     return uniq[:n]
 
 def load_clarq_prompts(root="./data/English"):
+    print(f"Loading ClarQ prompts from {root} ...")
     prompts = []
     for path in glob.glob(os.path.join(root, "**", "*.json"), recursive=True):
         try:
