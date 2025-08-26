@@ -7,11 +7,11 @@ Differential entropy:
 
 Shapley value:
 
-![Shapley values](https://github.com/sn0rkmaiden/shapley-uncertainty/blob/main/images/shapley_values.png?raw=true)
+![Shapley values](https://github.com/sn0rkmaiden/shapley-uncertainty/blob/main/images/shapley_values.jpg?raw=true)
 
 Total uncertainty:
 
-![Total uncertainty](https://github.com/sn0rkmaiden/shapley-uncertainty/blob/main/images/total_uncertainty.png?raw=true)
+![Total uncertainty](https://github.com/sn0rkmaiden/shapley-uncertainty/blob/main/images/total_uncertainty.jpg?raw=true)
 
 # Getting started
 
