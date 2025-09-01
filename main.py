@@ -6,7 +6,7 @@ print(f"Loaded {len(clarq_prompts)} ClarQ prompts. Example:\n{clarq_prompts[0]}"
 
 TEST_SAMPLES = 4
 TEST_PERMS = 500
-model = NLIModel()
+model = NLIModel(model_name="MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli")
 demo_prompt = clarq_prompts[0]
 res = model.shapley_uncertainty_for_prompt(demo_prompt, n_samples=TEST_SAMPLES, M=TEST_PERMS)
 print("Total uncertainty:", res["total_uncertainty"])

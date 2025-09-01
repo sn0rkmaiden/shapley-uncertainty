@@ -15,7 +15,7 @@ def test_fixed_case(labels, S, likelihood, description):
     print("Labels:", labels)
     print("Shapley values (phi):", phi)
     print("Total uncertainty:", total_uncertainty)
-    # print(f"Uncertainty (entropy): {entropy:.3f}, Confidence gap: {confgap:.3f}")
+    print(f"Uncertainty (entropy): {entropy:.3f}, Confidence gap: {confgap:.3f}")
 
 # Case 1: Beethoven (correlated)
 labels1 = ["Wolfgang Amadeus Mozart", "Mozart", "Ludwig van Beethoven"]
