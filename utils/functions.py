@@ -1,12 +1,25 @@
 import numpy as np
 import os, json, math, random, time, pathlib, glob, re
 from typing import List, Dict, Any
-from openai import OpenAI
-from dotenv import load_dotenv
 
-load_dotenv()
+# Optional: openai API imports
+try:
+    from openai import OpenAI
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    OpenAI = None
+
+# Huggingface transformers imports
+try:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
+except ImportError:
+    AutoModelForCausalLM = None
 
 def make_openai_client():
+    if OpenAI is None:
+        raise RuntimeError("openai package not installed.")
     key = os.getenv("HF_TOKEN")
     if not key:
         raise RuntimeError("HF_TOKEN env variable is required.")
@@ -14,6 +27,8 @@ def make_openai_client():
     return client
 
 def sample_generations_api(prompt: str, n: int = 20, max_tokens: int = 96, temperature: float = 0.8, top_p: float = 0.95, system: str = "You ask concise, specific clarifying questions.") -> list:
+    if OpenAI is None:
+        raise RuntimeError("openai package not installed.")
     client = make_openai_client()
     out = []
     for i in range(n):
@@ -30,6 +45,48 @@ def sample_generations_api(prompt: str, n: int = 20, max_tokens: int = 96, tempe
         )
         out.append(resp.choices[0].message.content.strip())
         time.sleep(0.05)
+    uniq = []
+    seen = set()
+    for t in out:
+        t1 = t.split("\n")[0].strip()
+        if t1 and t1 not in seen:
+            seen.add(t1); uniq.append(t1)
+    return uniq[:n]
+
+# Huggingface local LLM generation
+def load_hf_llm(model_name: str = "google/gemma-2b-it", device: str = None):
+    """
+    Load a Huggingface causal LM and tokenizer.
+    """
+    if AutoModelForCausalLM is None:
+        raise RuntimeError("transformers package not installed.")
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to(device).eval()
+    return model, tokenizer, device
+
+def sample_generations_hf(prompt: str, n: int = 20, max_tokens: int = 96, temperature: float = 0.8, top_p: float = 0.95,
+                          model_name: str = "google/gemma-2b-it", system: str = None, device: str = None) -> list:
+    """
+    Generate samples using a local Huggingface LLM.
+    """
+    model, tokenizer, device = load_hf_llm(model_name, device)
+    input_text = prompt if system is None else f"{system}\n{prompt}"
+    input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
+    out = []
+    for _ in range(n):
+        gen_ids = model.generate(
+            input_ids,
+            max_length=input_ids.shape[1] + max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id
+        )
+        gen_text = tokenizer.decode(gen_ids[0][input_ids.shape[1]:], skip_special_tokens=True).strip()
+        out.append(gen_text)
+        time.sleep(0.01)
     uniq = []
     seen = set()
     for t in out:

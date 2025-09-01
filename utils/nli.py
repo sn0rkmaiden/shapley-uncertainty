@@ -37,7 +37,7 @@ class NLIModel:
                                        sigma: float = 0.25, delta: float = 1e-6,
                                        temperature: float = 0.8, top_p: float = 0.95, max_tokens: int = 96,
                                        system_msg: str = "You ask concise, specific clarifying questions.") -> dict:
-        samples = sample_generations_api(prompt, n=n_samples, max_tokens=max_tokens, temperature=temperature, top_p=top_p, system=system_msg)
+        samples = sample_generations_hf(prompt, n=n_samples, max_tokens=max_tokens, temperature=temperature, top_p=top_p, system=system_msg)
         if len(samples) < 2:
             return {"uncertainty": 0.0, "phi": np.zeros(len(samples)), "samples": samples}
         P = self.pairwise_entailment_matrix(samples)
