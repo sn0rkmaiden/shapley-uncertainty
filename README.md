@@ -15,11 +15,16 @@ Total uncertainty:
 
 # Getting started
 
+Create Python virtual environment: `python -m venv venv`
+
 Install all required dependencies: `pip install -r requirements.txt`
+
+Create file `.env` and add following fields: "HF_TOKEN", "BASE_URL", "MODEL_NAME".
 ___
 
 - `test.py` - Shapley uncertainty for the example from the paper.
 - `main.py` - Shapley uncertainty for examples from [ClarQ-LLM](https://github.com/ygan/ClarQ-LLM) dataset
-
+- `ambik.py` - calculates Shapley uncertainty for two examples from AmbiK
+- `ambik_batch_eval.py` - calculates Shapley uncertainty for a batch from AmbiK
 
 
