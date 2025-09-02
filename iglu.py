@@ -5,38 +5,33 @@ from utils.nli import NLIModel
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load AmbiK dataset
-def load_ambik(path="./data/ambik_dataset/ambik_test_400.csv"):
+def load_iglu(path='./data/iglu/clarifying_questions_train.csv'):
     p = Path(path)
     if not p.exists():
-        raise FileNotFoundError(f"AmbiK file not found at {path}. Inspect the repo to find the correct file.")
+        raise FileNotFoundError(f"IGLU file not found at {path}. Inspect the repo to find the correct file.")
     data = pd.read_csv(path)
     return data
 
-# Create prompt for AmbiK sample
-def create_ambik_prompt(data, index):
+def create_iglu_prompt(data, index):
     row = data.iloc[index]
-    env = row['environment_full']
-    ambig = row['ambiguous_task']
-    prompt = f"Environment: {env}\nInstruction: {ambig}\nWhat should you do next? Ask a question if needed."
-    return prompt
+    return row
 
-# Main batch evaluation
 def batch_shapley_eval(n_samples=5, M=500):
     import json
     from tqdm import tqdm
-    df = load_ambik()
+    df = load_iglu()
+
     model = NLIModel(model_name="MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli")
-    results = {'preferences': [], 'common_sense_knowledge': []}
+    results = {'clear_instruction': [], 'ambiguous_instruction': []}
     stats = {}
-    for cat in ['preferences', 'common_sense_knowledge']:
-        subset = df[df['ambiguity_type'] == cat].reset_index(drop=True)
+    for cat in ['Yes', 'No']:
+        subset = df[df['IsInstructionClear'] == cat].reset_index(drop=True)
         sample_indices = np.random.choice(len(subset), min(n_samples, len(subset)), replace=False)
         sample_results = []
         uncertainties = []
-        print(f"Evaluating {cat} samples...")
-        for idx in tqdm(sample_indices, desc=f"{cat}"):
-            prompt = create_ambik_prompt(subset, idx)
+        print(f"Evaluating {'clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'} samples...")
+        for idx in tqdm(sample_indices, desc=f"{'clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'}"):
+            prompt = create_iglu_prompt(subset, idx)
             res = model.shapley_uncertainty_for_prompt(prompt, n_samples=n_samples, M=M)
             sample_results.append({
                 'prompt': prompt,
@@ -47,8 +42,8 @@ def batch_shapley_eval(n_samples=5, M=500):
                 'samples': res.get('samples')
             })
             uncertainties.append(res.get('uncertainty'))
-        results[cat] = sample_results
-        stats[cat] = {
+        results['clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'] = sample_results
+        stats['clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'] = {
             'mean': float(np.mean(uncertainties)),
             'std': float(np.std(uncertainties)),
             'min': float(np.min(uncertainties)),
