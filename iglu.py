@@ -13,7 +13,7 @@ def load_iglu(path='./data/iglu/clarifying_questions_train.csv'):
     return data
 
 def create_iglu_prompt(data, index):
-    row = data.iloc[index]
+    row = data.iloc[index]['InputInstruction']
     return row
 
 def batch_shapley_eval(n_samples=5, M=500):
@@ -32,7 +32,7 @@ def batch_shapley_eval(n_samples=5, M=500):
         print(f"Evaluating {'clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'} samples...")
         for idx in tqdm(sample_indices, desc=f"{'clear_instruction' if cat == 'Yes' else 'ambiguous_instruction'}"):
             prompt = create_iglu_prompt(subset, idx)
-            res = model.shapley_uncertainty_for_prompt(prompt, n_samples=n_samples, M=M)
+            res = model.shapley_uncertainty_for_prompt(prompt, n_samples=8, M=M)
             sample_results.append({
                 'prompt': prompt,
                 'total_uncertainty': res.get('total_uncertainty'),
@@ -52,9 +52,9 @@ def batch_shapley_eval(n_samples=5, M=500):
         }
     # Save summary statistics for plotting
     pd.DataFrame({k: [stats[k]['mean'], stats[k]['std'], stats[k]['min'], stats[k]['max']] for k in stats.keys()},
-                 index=['mean', 'std', 'min', 'max']).to_csv('ambik_shapley_uncertainty_stats.csv')
+                 index=['mean', 'std', 'min', 'max']).to_csv('iglu_shapley_uncertainty_stats.csv')
     # Save full results for later analysis
-    with open('ambik_shapley_uncertainty_full.json', 'w', encoding='utf-8') as f:
+    with open('iglu_shapley_uncertainty_full.json', 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     print('Statistics:', stats)
     return stats
