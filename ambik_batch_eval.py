@@ -3,6 +3,7 @@ from pathlib import Path
 from utils.functions import *
 from utils.nli import NLIModel
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Load AmbiK dataset
 def load_ambik(path="./data/ambik_dataset/ambik_test_400.csv"):
@@ -21,11 +22,11 @@ def create_ambik_prompt(data, index):
     return prompt
 
 # Main batch evaluation
-def batch_shapley_eval(n_samples=20, M=1000):
+def batch_shapley_eval(n_samples=5, M=500):
     import json
     from tqdm import tqdm
     df = load_ambik()
-    model = NLIModel()
+    model = NLIModel(model_name="MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli")
     results = {'preferences': [], 'common_sense_knowledge': []}
     stats = {}
     for cat in ['preferences', 'common_sense_knowledge']:
@@ -63,5 +64,15 @@ def batch_shapley_eval(n_samples=20, M=1000):
     print('Statistics:', stats)
     return stats
 
+def plot_stats(stats):
+    x = range(1, len(stats['preferences']['all']) + 1)
+    plt.plot(x, stats['preferences']['all'], label='Preferences')
+    plt.plot(x, stats['common_sense_knowledge']['all'], label='Common Sense Knowledge')
+    plt.legend()
+    plt.ylabel("Uncertainty (entropy)")
+    plt.xlabel("Samples")
+    plt.show()
+
 if __name__ == "__main__":
-    batch_shapley_eval(n_samples=20, M=1000)
+    stats = batch_shapley_eval(n_samples=20, M=1000)
+    plot_stats(stats)
