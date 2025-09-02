@@ -60,9 +60,9 @@ def batch_shapley_eval(n_samples=5, M=500):
     return stats
 
 def plot_stats(stats):
-    x = range(1, len(stats['preferences']['all']) + 1)
-    plt.plot(x, stats['preferences']['all'], label='Preferences')
-    plt.plot(x, stats['common_sense_knowledge']['all'], label='Common Sense Knowledge')
+    x = range(1, len(stats['clear_instruction']['all']) + 1)
+    plt.plot(x, stats['clear_instruction']['all'], label='clear_instruction')
+    plt.plot(x, stats['ambiguous_instruction']['all'], label='ambiguous_instruction')
     plt.legend()
     plt.ylabel("Uncertainty (entropy)")
     plt.xlabel("Samples")
